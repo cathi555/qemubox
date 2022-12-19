@@ -497,14 +497,7 @@ start_vm(){
         --yesno "命令行；${qemu_cmd}" "${window_height}" "${window_width}"
     retval="$?"
 
-    if [[ "$retval" == "0" ]]
-    then
-        qemu_output="$(bash -c "${qemu_cmd} 2>&1")"
-        whiptail --backtitle "qemubox" \
-            --title "qemu 输出内容" \
-            --msgbox "${qemu_output}" "${window_height}" "${window_width}"
-    fi
-
+    [[ "$retval" == "0" ]]&&exec ${qemu_cmd}
 }
 
 save_vm_config(){
