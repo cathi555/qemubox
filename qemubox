@@ -712,7 +712,8 @@ set_display_mode(){
         --menu "" "${window_height}" "${window_width}" "${list_height}" \
         "sdl" "" \
         "gtk" "" \
-        "vnc" "" 3>&1 1>&2 2>&3)" ||return 0
+        "vnc" "" \
+        "none" "" 3>&1 1>&2 2>&3)" ||return 0
 
     vm_display_mode="${option}"
 }
