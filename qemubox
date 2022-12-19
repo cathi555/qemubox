@@ -509,6 +509,8 @@ start_vm(){
 
 save_vm_config(){
     gen_vm_config >"${qb_config_dir}/vms/vm_${config_name}"
+    anything_changed=0
+
     whiptail --backtitle "qemubox" \
         --title "编辑配置 ${config_name}" \
         --msgbox "设置保存成功！" "${window_height}" "${window_width}"
