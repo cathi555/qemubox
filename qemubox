@@ -220,7 +220,7 @@ gen_qb_config(){
 ###############
 ###########工具
 ###############
-
+# {{{
 misc_tools(){
     local default_item
 
@@ -229,15 +229,82 @@ misc_tools(){
         option="$( whiptail --backtitle "qemubox" \
             --title "杂项工具" \
             --default-item "${default_item}" \
-            --notags \
+            --noitem \
             --menu "" "${window_height}" "${window_width}" "${list_height}" \
-            "create_new_disk" "创建新磁盘" \
-            "mount_disk" "挂载磁盘文件" 3>&1 1>&2 2>&3 )" || return 0
+            "创建新磁盘"   "" \
+            "挂载磁盘文件" "" 3>&1 1>&2 2>&3 )" || return 0
 
         default_item="${option}"
 
+        case "${option}" in
+            "创建新磁盘")   create_new_disk ;;
+            "挂载磁盘文件") mount_disk_file ;;
+        esac
     done
 }
+
+create_new_disk(){
+    local current_dir file_list file_name new_disk_dir new_disk_format new_disk_name new_disk_name_tail new_disk_size
+
+    new_disk_format="$( whiptail --backtitle "qemubox" \
+        --title "创建新磁盘" \
+        --noitem \
+        --menu "选择磁盘文件格式" "${window_height}" "${window_width}" "${list_height}" \
+        "raw" "" \
+        "qcow2" "" 3>&1 1>&2 2>&3 )" || return 0
+    case "${new_disk_format}" in
+        raw)   new_disk_name_tail="img"   ;;
+        qcow2) new_disk_name_tail="qcow2" ;;
+    esac #文件后缀名
+
+    new_disk_size="$( whiptail --backtitle "qemubox" \
+        --title "创建新磁盘" \
+        --inputbox "输入磁盘容量，如 \"1M\" \"2G\" 等" "${window_height}" "${window_width}" \
+        "2G" 3>&1 1>&2 2>&3 )" || return 0
+
+    new_disk_name="$( whiptail --backtitle "qemubox" \
+        --title "创建新磁盘" \
+        --inputbox "为你的新磁盘取个名字：" "${window_height}" "${window_width}" \
+        "newdisk.${new_disk_name_tail}" 3>&1 1>&2 2>&3 )" || return 0
+
+    whiptail --backtitle "qemubox" \
+        --title "创建新磁盘" \
+        --msgbox "请在接下来的界面中选择新磁盘文件所在的目录" "${window_height}" "${window_width}"
+
+    ## 磁盘文件所在的目录
+    current_dir="$( realpath . )"
+
+    while true
+    do
+        unset file_list
+        for i in "${current_dir}"/*
+        do
+            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
+            [[ ! -f "$i" ]]&& file_list+=( "${file_name}" "" )
+        done
+
+        option="$( whiptail --backtitle "qemubox" \
+            --title "创建新磁盘" \
+            --default-item ".." \
+            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
+            "选择此目录" "" \
+            ".." "" \
+            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
+
+        if [[ "${option}" == "选择此目录" ]]
+        then
+            new_disk_dir="$( realpath "${current_dir}" )"
+            break
+        else
+            current_dir="$( realpath "${current_dir}/${option}" )"
+        fi
+    done
+    qemu-img create -f "${new_disk_format}" "${new_disk_dir}/${new_disk_name}" "${new_disk_size}"
+    whiptail --backtitle "qemubox" \
+        --title "创建新磁盘" \
+        --msgbox "创建完成！" "${window_height}" "${window_width}"
+}
+# }}}
 
 ###############
 #########VM管理
@@ -640,11 +707,11 @@ set_bios_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_bios_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_bios_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -832,11 +899,11 @@ set_kernel_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_kernel_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_kernel_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -882,11 +949,11 @@ set_initrd_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_initrd_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_initrd_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -918,11 +985,11 @@ set_hda_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_hda_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_hda_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -967,11 +1034,11 @@ set_hdb_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_hdb_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_hdb_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -1017,11 +1084,11 @@ set_shared_dir_path(){
         if [[ "${option}" == "选择此目录" ]]
         then
             vm_shared_dir_path="$( realpath "${current_dir}" )"
-            return 0
+            break
         elif [[ "${option}" == "NULL" ]]
         then
             vm_shared_dir_path="NULL"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
@@ -1053,11 +1120,11 @@ set_cdrom_path(){
         if [[ "${option}" == "NULL" ]]
         then
             vm_cdrom_path="NULL"
-            return 0
+            break
         elif [[ -f "${current_dir}/${option}" ]]
         then
             vm_cdrom_path="$( realpath "${current_dir}/${option}" )"
-            return 0
+            break
         else
             current_dir="$( realpath "${current_dir}/${option}" )"
         fi
