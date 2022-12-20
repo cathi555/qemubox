@@ -81,9 +81,9 @@ dialog_ui(){
             --default-item "${default_item}" \
             --notags \
             --menu "选择配置文件" "${window_height}" "${window_width}" "${list_height}" \
-            "new" "新建配置" \
-            "tools" "工具" \
-            "setting" "设置" \
+            "new"     "% 新建配置" \
+            "tools"   "% 工具"     \
+            "setting" "% 设置"     \
             "${vm_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
 
         default_item="${option}"
@@ -100,7 +100,7 @@ dialog_ui(){
 ##########
 ##初次使用
 ##########
-#
+
 first_run(){
     mkdir -p "${qb_config_dir}/vms/"
     window_height="15"
@@ -173,8 +173,8 @@ qb_setting(){
             "保存设置" "当前:$([[ "${anything_changed}" == 0 ]]&& echo "未更改" ||echo "未保存")" \
             "窗口高度+1" "当前高度:${window_height}" \
             "窗口高度-1" "当前高度:${window_height}" \
-            "窗口宽度+1" "当前宽度:${window_width}" \
-            "窗口宽度-1" "当前宽度:${window_width}" \
+            "窗口宽度+1" "当前宽度:${window_width}"  \
+            "窗口宽度-1" "当前宽度:${window_width}"  \
             3>&1 1>&2 2>&3 )" || return 0
 
         default_item="${option}"
@@ -458,6 +458,15 @@ get_path_element(){
     fi
 }
 
+get_file_type(){
+    ## 如果参数为文件，则返回 file
+    ## 否则返回 ""
+    if [[ -f "$1" ]]
+    then
+        echo "file"
+    fi
+}
+
 edit_vm_config(){
     local anything_changed config_name default_item
     local vm_arch vm_mainboard vm_accel vm_bios_path vm_cpu_model vm_mem_size vm_graphic_dev vm_display_mode vm_vnc_port vm_serial_port vm_network_dev vm_kernel_path vm_kernel_append vm_initrd_path vm_hda_path vm_hda_if vm_hdb_path vm_hdb_if vm_shared_dir_path vm_cdrom_path vm_qemu_append
@@ -474,58 +483,58 @@ edit_vm_config(){
             --title "编辑配置 ${config_name}" \
             --default-item "${default_item}" \
             --menu "" "${window_height}" "${window_width}" "${list_height}" \
-            "启动虚拟机"       "${config_name}" \
+            "启动虚拟机"       "${config_name}"                                                            \
             "保存配置"         "当前:$([[ "${anything_changed}" == 0 ]]&& echo "未更改" || echo "未保存")" \
-            "架构"             "${vm_arch}" \
-            "主板"             "${vm_mainboard}" \
-            "加速类型"         "${vm_accel}" \
-            "BIOS"             "$( get_path_element "${vm_bios_path}"       )" \
-            "CPU"              "${vm_cpu_model}" \
-            "内存大小"         "${vm_mem_size}" \
-            "图形设备"         "${vm_graphic_dev}" \
-            "网络(user)设备"   "${vm_network_dev}" \
-            "显示方式"         "${vm_display_mode}" \
-            "vnc端口"          "${vm_vnc_port}" \
-            "串口(telnet)端口" "${vm_serial_port}" \
-            "内核"             "$( get_path_element "${vm_kernel_path}"     )" \
-            "内核参数"         "${vm_kernel_append}" \
-            "初始化内存盘"     "$( get_path_element "${vm_initrd_path}"     )" \
-            "硬盘A"            "$( get_path_element "${vm_hda_path}"        )" \
-            "硬盘A接口"        "${vm_hda_if}" \
-            "硬盘B"            "$( get_path_element "${vm_hdb_path}"        )" \
-            "硬盘B接口"        "${vm_hdb_if}" \
-            "共享目录"         "$( get_path_element "${vm_shared_dir_path}" )" \
-            "光盘"             "$( get_path_element "${vm_cdrom_path}"      )" \
-            "其它命令行参数"   "@${vm_qemu_append}" \
+            "架构"             "${vm_arch}"                                                                \
+            "主板"             "${vm_mainboard}"                                                           \
+            "加速类型"         "${vm_accel}"                                                               \
+            "BIOS"             "$( get_path_element "${vm_bios_path}"       )"                             \
+            "CPU"              "${vm_cpu_model}"                                                           \
+            "内存大小"         "${vm_mem_size}"                                                            \
+            "图形设备"         "${vm_graphic_dev}"                                                         \
+            "网络(user)设备"   "${vm_network_dev}"                                                         \
+            "显示方式"         "${vm_display_mode}"                                                        \
+            "vnc端口"          "${vm_vnc_port}"                                                            \
+            "串口(telnet)端口" "${vm_serial_port}"                                                         \
+            "内核"             "$( get_path_element "${vm_kernel_path}"     )"                             \
+            "内核参数"         "${vm_kernel_append}"                                                       \
+            "初始化内存盘"     "$( get_path_element "${vm_initrd_path}"     )"                             \
+            "硬盘A"            "$( get_path_element "${vm_hda_path}"        )"                             \
+            "硬盘A接口"        "${vm_hda_if}"                                                              \
+            "硬盘B"            "$( get_path_element "${vm_hdb_path}"        )"                             \
+            "硬盘B接口"        "${vm_hdb_if}"                                                              \
+            "共享目录"         "$( get_path_element "${vm_shared_dir_path}" )"                             \
+            "光盘"             "$( get_path_element "${vm_cdrom_path}"      )"                             \
+            "其它命令行参数"   "@${vm_qemu_append}"                                                        \
             "删除此配置"       "${config_name}" 3>&1 1>&2 2>&3 )" || return 0
 
         default_item="${option}"
 
         case "${option}" in
-            "启动虚拟机")                           start_vm                    ;;
-            "保存配置")                             save_vm_config              ;;
-            "架构")                                 set_vm_arch                 ;;
-            "主板")             anything_changed=1 ;set_vm_mainboard            ;;
-            "加速类型")         anything_changed=1 ;set_vm_accel                ;;
-            "BIOS")             anything_changed=1 ;set_vm_bios_path            ;;
-            "CPU")              anything_changed=1 ;set_cpu_model               ;;
-            "内存大小")         anything_changed=1 ;set_mem_size                ;;
-            "图形设备")         anything_changed=1 ;set_graphic_dev             ;;
-            "网络(user)设备")   anything_changed=1 ;set_network_dev             ;;
-            "显示方式")         anything_changed=1 ;set_display_mode            ;;
-            "vnc端口")          anything_changed=1 ;set_vnc_port                ;;
-            "串口(telnet)端口") anything_changed=1 ;set_serial_port             ;;
-            "内核")             anything_changed=1 ;set_kernel_path             ;;
-            "内核参数")         anything_changed=1 ;set_kernel_append           ;;
-            "初始化内存盘")     anything_changed=1 ;set_initrd_path             ;;
-            "硬盘A")            anything_changed=1 ;set_hda_path                ;;
-            "硬盘A接口")        anything_changed=1 ;set_hda_if                  ;;
-            "硬盘B")            anything_changed=1 ;set_hdb_path                ;;
-            "硬盘B接口")        anything_changed=1 ;set_hdb_if                  ;;
-            "共享目录")         anything_changed=1 ;set_shared_dir_path         ;;
-            "光盘")             anything_changed=1 ;set_cdrom_path              ;;
-            "其它命令行参数")   anything_changed=1 ;set_qemu_append             ;;
-            "删除此配置")                           delete_vm_config &&return 0 ;;
+            "启动虚拟机")                            start_vm                     ;;
+            "保存配置")                              save_vm_config               ;;
+            "架构")                                  set_arch                  ;;
+            "主板")             anything_changed=1 ; set_mainboard             ;;
+            "加速类型")         anything_changed=1 ; set_accel                 ;;
+            "BIOS")             anything_changed=1 ; set_bios_path             ;;
+            "CPU")              anything_changed=1 ; set_cpu_model                ;;
+            "内存大小")         anything_changed=1 ; set_mem_size                 ;;
+            "图形设备")         anything_changed=1 ; set_graphic_dev              ;;
+            "网络(user)设备")   anything_changed=1 ; set_network_dev              ;;
+            "显示方式")         anything_changed=1 ; set_display_mode             ;;
+            "vnc端口")          anything_changed=1 ; set_vnc_port                 ;;
+            "串口(telnet)端口") anything_changed=1 ; set_serial_port              ;;
+            "内核")             anything_changed=1 ; set_kernel_path              ;;
+            "内核参数")         anything_changed=1 ; set_kernel_append            ;;
+            "初始化内存盘")     anything_changed=1 ; set_initrd_path              ;;
+            "硬盘A")            anything_changed=1 ; set_hda_path                 ;;
+            "硬盘A接口")        anything_changed=1 ; set_hda_if                   ;;
+            "硬盘B")            anything_changed=1 ; set_hdb_path                 ;;
+            "硬盘B接口")        anything_changed=1 ; set_hdb_if                   ;;
+            "共享目录")         anything_changed=1 ; set_shared_dir_path          ;;
+            "光盘")             anything_changed=1 ; set_cdrom_path               ;;
+            "其它命令行参数")   anything_changed=1 ; set_qemu_append              ;;
+            "删除此配置")                            delete_vm_config && return 0 ;;
         esac
     done
 }
@@ -533,18 +542,18 @@ edit_vm_config(){
 start_vm(){
     local qemu_cmd qemu_output
 
-    qemu_cmd="$(gen_qemu_cmd)"
+    qemu_cmd="$( gen_qemu_cmd )"
 
     whiptail --backtitle "qemubox" \
         --title "启动虚拟机？" \
-        --yesno "命令行；${qemu_cmd}" "${window_height}" "${window_width}"
+        --yesno "命令行；\n${qemu_cmd}" "${window_height}" "${window_width}"
     retval="$?"
 
     [[ "$retval" == "0" ]]&& exec ${qemu_cmd}
 }
 
 save_vm_config(){
-    gen_vm_config >"${qb_config_dir}/vms/vm_${config_name}"
+    gen_vm_config > "${qb_config_dir}/vms/vm_${config_name}"
     anything_changed=0
 
     whiptail --backtitle "qemubox" \
@@ -552,26 +561,26 @@ save_vm_config(){
         --msgbox "设置保存成功！" "${window_height}" "${window_width}"
 }
 
-set_vm_arch(){
+set_arch(){
     NEWT_COLORS='root=magenta,magenta' whiptail --backtitle "qemubox" \
         --title "更改架构" \
         --msgbox "此项不可更改！" "${window_height}" "${window_width}"
 }
 
-set_vm_mainboard(){
+set_mainboard(){
     local mainboard_list
 
     if [[ "${vm_arch}" == "x86_64" ]]
     then
-        for i in $(qemu-system-x86_64 -machine help |sed '1d' |cut -d\  -f1 |sort)
+        for i in $( qemu-system-x86_64  -machine help | sed '1d' | cut -d\  -f1 | sort )
         do
-            mainboard_list+=("$i" "")
+            mainboard_list+=( "$i" "" )
         done
     elif [[ "${vm_arch}" == "arm64" ]]
     then
-        for i in $(qemu-system-aarch64 -machine help |sed '1d' |cut -d\  -f1 |sort)
+        for i in $( qemu-system-aarch64 -machine help | sed '1d' | cut -d\  -f1 | sort )
         do
-            mainboard_list+=("$i" "")
+            mainboard_list+=( "$i" "" )
         done
     fi
 
@@ -586,7 +595,7 @@ set_vm_mainboard(){
     vm_mainboard="${option}"
 }
 
-set_vm_accel(){
+set_accel(){
     option="$( whiptail --backtitle "qemubox" \
         --title "更改加速类型" \
         --default-item "${vm_accel}" \
@@ -599,10 +608,10 @@ set_vm_accel(){
     vm_accel="${option}"
 }
 
-set_vm_bios_path(){
+set_bios_path(){
     local current_dir file_list file_name
 
-    current_dir="$(realpath .)"
+    current_dir="$( realpath . )"
 
     while true
     do
@@ -610,7 +619,7 @@ set_vm_bios_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=("${file_name}" "$( [[ -f "$i" ]]&& echo "file" )")
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -639,15 +648,15 @@ set_cpu_model(){
 
     if [[ "${vm_arch}" == "x86_64" ]]
     then
-        for i in $(qemu-system-x86_64 -cpu help |grep "^x86" |cut -d\  -f2 |sort)
+        for i in $( qemu-system-x86_64  -cpu help | grep "^x86" | cut -d\  -f2 | sort )
         do
-            cpu_model_list+=("$i" "")
+            cpu_model_list+=( "$i" "" )
         done
     elif [[ "${vm_arch}" == "arm64" ]]
     then
-        for i in $(qemu-system-aarch64 -cpu help |sed '1d' |sort)
+        for i in $( qemu-system-aarch64 -cpu help | sed '1d' | sort )
         do
-            cpu_model_list+=("$i" "")
+            cpu_model_list+=( "$i" "" )
         done
     fi
 
@@ -689,15 +698,15 @@ set_graphic_dev(){
 
     if [[ "${vm_arch}" == "x86_64" ]]
     then
-        for i in $(qemu-system-x86_64 -vga help |cut -d\  -f1 |sort)
+        for i in $( qemu-system-x86_64                           -vga help | cut -d\  -f1 | sort )
         do
-            graphic_dev_list+=("$i" "")
+            graphic_dev_list+=( "$i" "" )
         done
     elif [[ "${vm_arch}" == "arm64" ]]
     then
-        for i in $(qemu-system-aarch64 -machine virt -vga help -nographic |cut -d\  -f1 |sort)
+        for i in $( qemu-system-aarch64 -machine virt -nographic -vga help | cut -d\  -f1 | sort )
         do
-            graphic_dev_list+=("$i" "")
+            graphic_dev_list+=( "$i" ""  )
         done
     fi
 
@@ -717,15 +726,15 @@ set_network_dev(){
 
     if [[ "${vm_arch}" == "x86_64" ]]
     then
-        for i in $(qemu-system-x86_64 -nic user,model=help |sed '1d' |sort)
+        for i in $( qemu-system-x86_64                           -nic user,model=help | sed '1d' | sort )
         do
-            network_dev_list+=("$i" "")
+            network_dev_list+=( "$i" "" )
         done
     elif [[ "${vm_arch}" == "arm64" ]]
     then
-        for i in $(qemu-system-aarch64 -machine virt -nic user,model=help -nographic |sed '1d' |sort)
+        for i in $( qemu-system-aarch64 -machine virt -nographic -nic user,model=help | sed '1d' | sort )
         do
-            network_dev_list+=("$i" "")
+            network_dev_list+=( "$i" "" )
         done
     fi
 
@@ -793,7 +802,7 @@ set_serial_port(){
 set_kernel_path(){
     local current_dir file_list file_name
 
-    current_dir="$(realpath .)"
+    current_dir="$( realpath . )"
 
     while true
     do
@@ -801,7 +810,7 @@ set_kernel_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=("${file_name}" "$( [[ -f "$i" ]]&& echo "file" )")
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -851,7 +860,7 @@ set_initrd_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( [[ -f "$i" ]]&& echo "file" )" )
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -887,7 +896,7 @@ set_hda_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( [[ -f "$i" ]]&& echo "file" )" )
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -936,7 +945,7 @@ set_hdb_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( [[ -f "$i" ]]&& echo "file" )" )
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -1022,7 +1031,7 @@ set_cdrom_path(){
         for i in "${current_dir}"/*
         do
             file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( [[ -f "$i" ]]&&echo "file" )" )
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
         done
 
         option="$( whiptail --backtitle "qemubox" \
@@ -1053,9 +1062,12 @@ set_qemu_append(){
     input_content="$( whiptail --backtitle "qemubox" \
         --title "编辑其它命令行参数" \
         --inputbox "请保留输入框开头的 '@' ，否则会产生BUG！" "${window_height}" "${window_width}" \
-        "@$( [[ "${vm_qemu_append}" != "NULL" ]]&&echo ${vm_qemu_append} )" 3>&1 1>&2 2>&3 )"
+        "@$( [[ "${vm_qemu_append}" != "NULL" ]]&& echo ${vm_qemu_append} )" 3>&1 1>&2 2>&3 )"
 
-    if [[ "${input_content}" =~ @.* ]]
+    if [[ "${input_content}" == "@" ]]
+    then
+        vm_qemu_append="NULL"
+    elif [[ "${input_content}" =~ @.+ ]]
     then
         vm_qemu_append="$( sed 's/^@//' <<< "${input_content}" )"
     fi
