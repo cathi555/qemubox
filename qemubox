@@ -1168,5 +1168,88 @@ delete_vm_config(){
 # }}}
 
 
+###############
+#####有用的函数
+###############
+# {{{
+select_file(){
+    ## 取消：return 1
+
+    local current_dir file_list file_name
+
+    current_dir="$( realpath . )"
+
+    while true
+    do
+        unset file_list
+        for i in "${current_dir}"/*
+        do
+            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
+            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
+        done
+
+        option="$( whiptail --backtitle "qemubox" \
+            --title "选择一个文件" \
+            --default-item ".." \
+            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
+            "NULL" "" \
+            ".." "" \
+            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 1
+
+        if [[ "${option}" == "NULL" ]]
+        then
+            echo "NULL"
+            return 0
+        elif [[ -f "${current_dir}/${option}" ]]
+        then
+            echo "$( realpath "${current_dir}/${option}" )"
+            return 0
+        else
+            current_dir="$( realpath "${current_dir}/${option}" )"
+        fi
+    done
+}
+
+select_dir(){
+    ## 取消：return 1
+
+    local current_dir file_list file_name
+
+    current_dir="$( realpath . )"
+
+    while true
+    do
+        unset file_list
+        for i in "${current_dir}"/*
+        do
+            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
+            [[ ! -f "$i" ]]&& file_list+=( "${file_name}" "" )
+        done
+
+        option="$( whiptail --backtitle "qemubox" \
+            --title "选择一个目录" \
+            --default-item ".." \
+            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
+            "选择此目录" "" \
+            "NULL" "" \
+            ".." "" \
+            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 1
+
+        if [[ "${option}" == "NULL" ]]
+        then
+            vm_shared_dir_path="NULL"
+            return 0
+        elif [[ "${option}" == "选择此目录" ]]
+        then
+            echo "$( realpath "${current_dir}" )"
+            return 0
+        else
+            current_dir="$( realpath "${current_dir}/${option}" )"
+        fi
+    done
+}
+# }}}
+
+
 main "$@"
 
