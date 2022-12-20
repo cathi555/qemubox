@@ -32,6 +32,10 @@
 # cdrom_path
 # qemu_append       
 
+###############
+###########入口
+###############
+# {{{
 main(){
     qb_config_dir="${HOME}/.config/qemubox/"
 
@@ -96,11 +100,12 @@ dialog_ui(){
         esac
     done
 }
+# }}}
 
-##########
-##初次使用
-##########
-
+###############
+#######初次使用
+###############
+# {{{
 first_run(){
     mkdir -p "${qb_config_dir}/vms/"
     window_height="15"
@@ -110,11 +115,12 @@ first_run(){
         --title "初次启动" \
         --msgbox "必要的配置文件已创建完成！" "${window_height}" "${window_width}"
 }
+# }}}
 
-##########
-##新建配置
-##########
-
+###############
+#######新建配置
+###############
+# {{{
 create_vm_config(){
     local new_config_name
 
@@ -154,11 +160,12 @@ create_vm_config(){
             --msgbox "新的配置 ${new_config_name} 创建成功！" "${window_height}" "${window_width}"
     fi
 }
+# }}}
 
-##########
-######设置
-##########
-
+###############
+###########设置
+###############
+# {{{
 qb_setting(){
     local anything_changed default_item
 
@@ -208,10 +215,11 @@ gen_qb_config(){
     echo "window_height:${window_height}"
     echo "window_width:${window_width}"
 }
+# }}}
 
-##########
-######工具
-##########
+###############
+###########工具
+###############
 
 misc_tools(){
     local default_item
@@ -231,10 +239,10 @@ misc_tools(){
     done
 }
 
-##########
-####VM管理
-##########
-
+###############
+#########VM管理
+###############
+# {{{
 read_vm_config(){
     local config_name
 
@@ -448,8 +456,8 @@ gen_vm_config(){
 }
 
 get_path_element(){
-    ## 如果参数为 NULL ，则输出 NULL
-    ## 如果参数为路径，则输出 .../文件名
+    ## 如果参数为 NULL ，则输出 "NULL"
+    ## 如果参数为路径，则输出 ".../文件名"
     if [[ "$1" != "NULL" ]]
     then
         awk -F/ '{ printf(".../%s",$NF) }' <<< "$1"
@@ -459,7 +467,7 @@ get_path_element(){
 }
 
 get_file_type(){
-    ## 如果参数为文件，则返回 file
+    ## 如果参数为文件，则返回 "file"
     ## 否则返回 ""
     if [[ -f "$1" ]]
     then
@@ -1090,6 +1098,8 @@ delete_vm_config(){
         return 1 #此时没有删除
     fi
 }
+# }}}
+
 
 main "$@"
 
