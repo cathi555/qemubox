@@ -348,13 +348,13 @@ gen_qemu_cmd(){
 
     ## 架构
     case "${vm_arch}" in
-        x86_64) qemu_cmd+=" qemu-system-x86_64"
+        x86_64) qemu_cmd+="qemu-system-x86_64"
             if [[ "${vm_mainboard}" != "default" ]]
             then
                 qemu_cmd+=" -machine ${vm_mainboard}"
             fi ;;
 
-        arm64)  qemu_cmd+=" qemu-system-aarch64"
+        arm64)  qemu_cmd+="qemu-system-aarch64"
             if [[ "${vm_mainboard}" != "default" ]]
             then
                 qemu_cmd+=" -machine ${vm_mainboard}"
@@ -597,7 +597,7 @@ start_vm(){
 
     whiptail --backtitle "qemubox" \
         --title "启动虚拟机？" \
-        --yesno "命令行；\n${qemu_cmd}" "${window_height}" "${window_width}"
+        --yesno "命令行：\n${qemu_cmd}" "${window_height}" "${window_width}"
     retval="$?"
 
     [[ "$retval" == "0" ]]&& exec ${qemu_cmd}
