@@ -244,7 +244,7 @@ misc_tools(){
 }
 
 create_new_disk(){
-    local current_dir file_list file_name new_disk_dir new_disk_format new_disk_name new_disk_name_tail new_disk_size
+    local new_disk_dir new_disk_format new_disk_name new_disk_name_tail new_disk_size
 
     new_disk_format="$( whiptail --backtitle "qemubox" \
         --title "创建新磁盘" \
@@ -272,33 +272,9 @@ create_new_disk(){
         --msgbox "请在接下来的界面中选择新磁盘文件所在的目录" "${window_height}" "${window_width}"
 
     ## 磁盘文件所在的目录
-    current_dir="$( realpath . )"
+    dir_path="$( NONULL=1 select_dir )" ||return 0
+    new_disk_dir="${dir_path}"
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            [[ ! -f "$i" ]]&& file_list+=( "${file_name}" "" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "创建新磁盘" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "选择此目录" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "选择此目录" ]]
-        then
-            new_disk_dir="$( realpath "${current_dir}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
     qemu-img create -f "${new_disk_format}" "${new_disk_dir}/${new_disk_name}" "${new_disk_size}"
     whiptail --backtitle "qemubox" \
         --title "创建新磁盘" \
@@ -684,38 +660,11 @@ set_accel(){
 }
 
 set_bios_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改BIOS路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_bios_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_bios_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_bios_path="${file_path}"
 }
 
 set_cpu_model(){
@@ -875,39 +824,11 @@ set_serial_port(){
 }
 
 set_kernel_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改内核路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_kernel_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_kernel_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_kernel_path="${file_path}"
 }
 
 set_kernel_append(){
@@ -925,75 +846,19 @@ set_kernel_append(){
 }
 
 set_initrd_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改初始化内存盘路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_initrd_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_initrd_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_initrd_path="${file_path}"
 }
 
 set_hda_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改磁盘A路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_hda_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_hda_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_hda_path="${file_path}"
 }
 
 set_hda_if(){
@@ -1010,39 +875,11 @@ set_hda_if(){
 }
 
 set_hdb_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改磁盘B路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_hdb_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_hdb_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_hdb_path="${file_path}"
 }
 
 set_hdb_if(){
@@ -1059,76 +896,19 @@ set_hdb_if(){
 }
 
 set_shared_dir_path(){
-    local current_dir file_list file_name
+    local dir_path
 
-    current_dir="$( realpath . )"
+    dir_path="$( select_dir )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            [[ ! -f "$i" ]]&& file_list+=( "${file_name}" "" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改共享目录路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "选择此目录" "" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "选择此目录" ]]
-        then
-            vm_shared_dir_path="$( realpath "${current_dir}" )"
-            break
-        elif [[ "${option}" == "NULL" ]]
-        then
-            vm_shared_dir_path="NULL"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_shared_dir_path="${dir_path}"
 }
 
 set_cdrom_path(){
-    local current_dir file_list file_name
+    local file_path
 
-    current_dir="$( realpath . )"
+    file_path="$( select_file )" || return 0
 
-    while true
-    do
-        unset file_list
-        for i in "${current_dir}"/*
-        do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            file_list+=( "${file_name}" "$( get_file_type "$i" )" )
-        done
-
-        option="$( whiptail --backtitle "qemubox" \
-            --title "更改光盘路径" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 0
-
-        if [[ "${option}" == "NULL" ]]
-        then
-            vm_cdrom_path="NULL"
-            break
-        elif [[ -f "${current_dir}/${option}" ]]
-        then
-            vm_cdrom_path="$( realpath "${current_dir}/${option}" )"
-            break
-        else
-            current_dir="$( realpath "${current_dir}/${option}" )"
-        fi
-    done
+    vm_cdrom_path="${file_path}"
 }
 
 set_qemu_append(){
@@ -1212,32 +992,43 @@ select_file(){
 
 select_dir(){
     ## 取消：return 1
-
-    local current_dir file_list file_name
+    ## 如果 $NONULL=1 则不显示NULL选项
+    local current_dir dir_list dir_name NONULL
 
     current_dir="$( realpath . )"
 
     while true
     do
-        unset file_list
+        unset dir_list
         for i in "${current_dir}"/*
         do
-            file_name="$( awk -F/ '{print $NF}' <<< "$i" )"
-            [[ ! -f "$i" ]]&& file_list+=( "${file_name}" "" )
+            dir_name="$( awk -F/ '{print $NF}' <<< "$i" )"
+            [[ ! -f "$i" ]]&& dir_list+=( "${dir_name}" "" )
         done
 
-        option="$( whiptail --backtitle "qemubox" \
-            --title "选择一个目录" \
-            --default-item ".." \
-            --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
-            "选择此目录" "" \
-            "NULL" "" \
-            ".." "" \
-            "${file_list[@]}" 3>&1 1>&2 2>&3 )" || return 1
+        if [[ "${NONULL}" = 1 ]]
+        then
+            option="$( whiptail --backtitle "qemubox" \
+                --title "选择一个目录" \
+                --default-item ".." \
+                --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
+                "选择此目录" "" \
+                ".." "" \
+                "${dir_list[@]}" 3>&1 1>&2 2>&3 )" || return 1
+        else
+            option="$( whiptail --backtitle "qemubox" \
+                --title "选择一个目录" \
+                --default-item ".." \
+                --menu "当前目录: ${current_dir}" "${window_height}" "${window_width}" "${list_height}" \
+                "选择此目录" "" \
+                "NULL" "" \
+                ".." "" \
+                "${dir_list[@]}" 3>&1 1>&2 2>&3 )" || return 1
+        fi
 
         if [[ "${option}" == "NULL" ]]
         then
-            vm_shared_dir_path="NULL"
+            echo "NULL"
             return 0
         elif [[ "${option}" == "选择此目录" ]]
         then
